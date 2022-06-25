@@ -70,22 +70,17 @@ public enum SwiftIPConfig {
 
             let name = String(utf8String: interface.ifa_name)
             guard name == ethernet else {
-                return nil
+                continue
             }
 
-            var addr = interface.ifa_addr.pointee
+            let addr = interface.ifa_addr.pointee
             guard addr.sa_family == UInt8(AF_INET) || addr.sa_family == UInt8(AF_INET6) else {
-                return nil
+                continue
             }
 
             let flags = Int32(interface.ifa_flags)
             guard (flags & (IFF_UP|IFF_RUNNING|IFF_LOOPBACK)) == (IFF_UP|IFF_RUNNING) else {
-                return nil
-            }
-
-            var hostname = [CChar](repeating: 0, count: Int(NI_MAXHOST))
-            guard getnameinfo(&addr, socklen_t(addr.sa_len), &hostname, socklen_t(hostname.count), nil, socklen_t(0), NI_NUMERICHOST) == 0 else {
-                return nil
+                continue
             }
 
             var net = interface.ifa_netmask.pointee
