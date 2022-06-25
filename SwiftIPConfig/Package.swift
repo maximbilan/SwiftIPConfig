@@ -1,6 +1,4 @@
 // swift-tools-version: 5.6
-// The swift-tools-version declares the minimum version of Swift required to build this package.
-
 import PackageDescription
 
 let package = Package(
@@ -20,9 +18,6 @@ let package = Package(
         .target(
             name: "SwiftIPConfig",
             dependencies: ["gateway"],
-            path: "Sources/SwiftIPConfig"),
-        .testTarget(
-            name: "SwiftIPConfigTests",
-            dependencies: ["SwiftIPConfig"]),
+            path: "Sources/SwiftIPConfig")
     ]
 )
