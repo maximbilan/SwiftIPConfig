@@ -22,7 +22,7 @@
 #define ROUNDUP(a) \
 ((a) > 0 ? (1 + (((a) - 1) | (sizeof(long) - 1))) : sizeof(long))
 
-int getdefaultgateway(in_addr_t * addr) {
+int get_gateway(in_addr_t * addr) {
     int mib[] = {CTL_NET, PF_ROUTE, 0, AF_INET, NET_RT_FLAGS, RTF_GATEWAY};
     size_t l;
     char * buf, * p;
