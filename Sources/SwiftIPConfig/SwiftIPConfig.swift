@@ -68,22 +68,30 @@ public enum SwiftIPConfig {
                 return nil
             }
 
-            let addrFamily = interface.ifa_addr.pointee.sa_family
-            if addrFamily == UInt8(AF_INET) || addrFamily == UInt8(AF_INET6) {
-                guard let ifa_name = interface.ifa_name else {
-                    return nil
-                }
-                let name: String = String(cString: ifa_name)
-                if name == ethernet {
-                    let flags = Int32(interface.ifa_flags)
-                    var addr = interface.ifa_addr.pointee
-                    if (flags & (IFF_UP | IFF_RUNNING | IFF_LOOPBACK)) == (IFF_UP | IFF_RUNNING) {
-                        var netmaskName = [CChar](repeating: 0, count: Int(NI_MAXHOST))
-                        getnameinfo(&addr, socklen_t(addr.sa_len), &netmaskName, socklen_t(netmaskName.count), nil, socklen_t(0), NI_NUMERICHOST)
-                        netmask = String.init(validatingUTF8:netmaskName)
-                    }
-                }
+            let name = String(utf8String: interface.ifa_name)
+            guard name == ethernet else {
+                return nil
             }
+
+            var addr = interface.ifa_addr.pointee
+            guard addr.sa_family == UInt8(AF_INET) || addr.sa_family == UInt8(AF_INET6) else {
+                return nil
+            }
+
+            let flags = Int32(interface.ifa_flags)
+            guard (flags & (IFF_UP|IFF_RUNNING|IFF_LOOPBACK)) == (IFF_UP|IFF_RUNNING) else {
+                return nil
+            }
+
+            var hostname = [CChar](repeating: 0, count: Int(NI_MAXHOST))
+            guard getnameinfo(&addr, socklen_t(addr.sa_len), &hostname, socklen_t(hostname.count), nil, socklen_t(0), NI_NUMERICHOST) == 0 else {
+                return nil
+            }
+
+            var net = interface.ifa_netmask.pointee
+            var netmaskName = [CChar](repeating: 0, count: Int(NI_MAXHOST))
+            getnameinfo(&net, socklen_t(net.sa_len), &netmaskName, socklen_t(netmaskName.count), nil, socklen_t(0), NI_NUMERICHOST)
+            netmask = String(validatingUTF8: netmaskName)
         }
         freeifaddrs(ifaddr)
 
